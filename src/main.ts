@@ -1,4 +1,5 @@
 import { cls, createComponent, div, newEventEmitter, signal } from './core';
+import { when } from './core/render';
 import './style.css';
 
 export * from './core';
@@ -17,7 +18,10 @@ createComponent({
     events.testClick('12')
     events.testClick(signal('jksdf'))
   }, 2000);
-  return div(cls`flex ${() => props.name()}`, 'props: ', props.name, () => props.name() + 1)
+  return div(
+    cls`flex ${() => props.name()}`, 'props: ', props.name, () => props.name() + 1,
+    when(true, div('lksdjlkjsdf'))
+  )
 })
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
