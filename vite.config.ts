@@ -1,9 +1,13 @@
 import { defineConfig } from 'vite';
+import checker from 'vite-plugin-checker';
 import dts from 'vite-plugin-dts';
 
 export default defineConfig({
     plugins: [
-        dts()
+        dts(),
+        checker({
+            typescript: true
+        })
     ],
     build: {
         lib: {

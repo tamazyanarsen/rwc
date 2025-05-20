@@ -1,20 +1,23 @@
+import type { Signal } from "../types";
+
 const effectStack: (() => void)[] = []
 
-
-
-export const signal = <T>(initialValue: T) => {
+export const signal = <T>(initialValue: T): Signal<T> => {
     const subscribers = new Set<Function>();
 
     let value: T = initialValue;
 
     const result = () => {
-        subscribers.add(effectStack[effectStack.length - 1])
+        const currentEffect = effectStack[effectStack.length - 1]
+        if (currentEffect) subscribers.add(currentEffect)
         return value
     }
     result.set = (newValue: T) => {
         if (value === newValue) return;
         value = newValue
-        subscribers.forEach(subscriber => subscriber(value))
+        subscribers.forEach(subscriber => {
+            subscriber(value)
+        })
     }
     result.forceSet = (newValue: T) => {
         value = newValue
