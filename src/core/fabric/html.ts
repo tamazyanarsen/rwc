@@ -31,7 +31,7 @@ const fabric: Fabric = new Proxy(
             return (config?: Config<K, HTMLElementTagNameMap[K]> | SomeContent, ...items: SomeContent[]) => {
                 const isConfig = (
                     value?: Config<K, HTMLElementTagNameMap[K]> | SomeContent
-                ): value is Config<K, HTMLElementTagNameMap[K]> => 'classList' in (value as any);
+                ): value is Config<K, HTMLElementTagNameMap[K]> => typeof value === 'object' && 'classList' in value;
                 const renderTemplate = new Template(prop);
                 const newItems = [...items];
                 if (isConfig(config)) {

@@ -62,7 +62,7 @@ export function createComponent<
     return (config?: Config | SomeContent, ...items: SomeContent[]) => {
         const isConfig = (
             value?: Config | SomeContent
-        ): value is Config => 'classList' in (value as any);
+        ): value is Config => typeof value === 'object' && 'classList' in value;
         const customTemplate = new CustomTemplate(CustomElement);
         const newItems = [...items];
         if (isConfig(config)) {

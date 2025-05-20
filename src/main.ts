@@ -14,13 +14,16 @@ createComponent({
   }
 }, (props, events) => {
   console.log(props, events)
+  const test = signal(false)
   setTimeout(() => {
     events.testClick('12')
     events.testClick(signal('jksdf'))
+    test.set(true)
   }, 2000);
   return div(
     cls`flex ${() => props.name()}`, 'props: ', props.name, () => props.name() + 1,
-    when(true, div('lksdjlkjsdf'))
+    when(true, div('true-content')),
+    when(test, div('true-content'), div('false-content'))
   )
 })
 
