@@ -1,4 +1,4 @@
-import { Template, type ElementClassList, type SomeContent, type TemplateEvent } from "../render";
+import { CustomTemplate, Template, type ElementClassList, type SomeContent, type TemplateEvent } from "../render";
 
 type Fabric = {
     [key in keyof HTMLElementTagNameMap]: (
@@ -8,7 +8,7 @@ type Fabric = {
 }
 
 type Config<K extends keyof HTMLElementTagNameMap, E extends HTMLElementTagNameMap[K]> = {
-    classList?: ElementClassList;
+    classNameItems?: ElementClassList;
 } & Partial<{
     [key in keyof E as `.${string & key}`]?: E[key]
 }> & Partial<{
@@ -17,7 +17,7 @@ type Config<K extends keyof HTMLElementTagNameMap, E extends HTMLElementTagNameM
 
 export const cls = (strings: TemplateStringsArray, ...values: ElementClassList): Config<any, any> => {
     return {
-        classList: [...strings, ...values]
+        classNameItems: [...strings, ...values]
     }
 }
 
@@ -31,19 +31,19 @@ const fabric: Fabric = new Proxy(
             return (config?: Config<K, HTMLElementTagNameMap[K]> | SomeContent, ...items: SomeContent[]) => {
                 const isConfig = (
                     value?: Config<K, HTMLElementTagNameMap[K]> | SomeContent
-                ): value is Config<K, HTMLElementTagNameMap[K]> => typeof value === 'object' && 'classList' in value;
+                ): value is Config<K, HTMLElementTagNameMap[K]> => !(typeof value === 'string' || value instanceof Template || value instanceof CustomTemplate)
                 const renderTemplate = new Template(prop);
                 const newItems = [...items];
                 if (isConfig(config)) {
-                    renderTemplate.addClassList(config.classList || []);
+                    renderTemplate.addClassList(config.classNameItems || []);
                     Object.entries(config).forEach(([key, value]) => {
-                        const newKey = key as keyof HTMLElementTagNameMap[K] & string;
                         if (key.startsWith('.')) {
+                            const newKey = key.slice(1) as keyof HTMLElementTagNameMap[K] & string;
                             renderTemplate.setAttribute(newKey,
                                 value as HTMLElementTagNameMap[K][typeof newKey] | ((self: Template<K>) => HTMLElementTagNameMap[K][typeof newKey])
                             );
                         } else if (key.startsWith('@')) {
-                            const newKey = key as keyof HTMLElementEventMap & string;
+                            const newKey = key.slice(1) as keyof HTMLElementEventMap & string;
                             renderTemplate.handleEvent(newKey, value as TemplateEvent<K, typeof newKey>);
                         }
                     });

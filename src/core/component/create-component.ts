@@ -1,4 +1,4 @@
-import { convertTemplateToHtml, CustomTemplate, type CustomTemplateEvent, type ElementClassList, type SomeContent, type SomeTemplate } from "../render";
+import { convertTemplateToHtml, CustomTemplate, Template, type CustomTemplateEvent, type ElementClassList, type SomeContent, type SomeTemplate } from "../render";
 import { effect, signal } from "../signal";
 import { BaseComponent, isSignal, type EventEmitter, type InferSignal, type Signal } from "../types";
 import { camelToKebab, kebabToCamel } from "../utils/helpers";
@@ -12,12 +12,12 @@ export function createComponent<
     Events extends Record<string, EventEmitter<any>>
 >(config: {
     selector: string,
-    props: Props,
-    events: Events
+    props?: Props,
+    events?: Events
 }, render: (props: Props, events: Events) => SomeTemplate) {
     class CustomElement extends BaseComponent {
         static selector = config.selector;
-        static observedAttributes = Object.keys(config.props).map(camelToKebab);
+        static observedAttributes = Object.keys(config.props || {}).map(camelToKebab);
 
         shadow: ShadowRoot;
 
@@ -26,8 +26,8 @@ export function createComponent<
             this.shadow = this.attachShadow({ mode: 'closed' });
         }
 
-        props = Object.fromEntries(Object.entries(config.props).map(([key, value]) => [key, signal(value())])) as Props;
-        events = Object.fromEntries(Object.entries(config.events).map(([key, emitter]) => [
+        props = Object.fromEntries(Object.entries(config.props || {}).map(([key, value]) => [key, signal(value())])) as Props;
+        events = Object.fromEntries(Object.entries(config.events || {}).map(([key, emitter]) => [
             key,
             (value: Parameters<typeof emitter>[0]) => effect(() => this.dispatchEvent(
                 new CustomEvent<EmitterValue<typeof emitter>>(key, { detail: isSignal(value) ? value() : value })
@@ -51,28 +51,28 @@ export function createComponent<
     }
 
     type Config = {
-        classList?: ElementClassList;
+        classNameItems?: ElementClassList;
     } & Partial<{
-        [key in keyof typeof config.props as `.${key & string}`]: InferSignal<typeof config.props[key]>
+        [key in keyof Props as `.${key & string}`]: InferSignal<Props[key]>
     }> & Partial<{
-        [key in keyof typeof config.events as `@${key & string}`]: CustomTemplateEvent<typeof CustomElement, key>
+        [key in keyof Events as `@${key & string}`]: CustomTemplateEvent<typeof CustomElement, key>
     }>
 
     customElements.define(config.selector, CustomElement);
     return (config?: Config | SomeContent, ...items: SomeContent[]) => {
         const isConfig = (
             value?: Config | SomeContent
-        ): value is Config => typeof value === 'object' && 'classList' in value;
+        ): value is Config => !(typeof value === 'string' || value instanceof Template || value instanceof CustomTemplate)
         const customTemplate = new CustomTemplate(CustomElement);
         const newItems = [...items];
         if (isConfig(config)) {
-            customTemplate.addClassList(config.classList || []);
+            customTemplate.addClassList(config.classNameItems || []);
             Object.entries(config).forEach(([key, value]) => {
                 if (key.startsWith('.')) {
                     if (value)
-                        customTemplate.setAttribute(key, value as any);
+                        customTemplate.setAttribute(camelToKebab(key.slice(1)), value as any);
                 } else if (key.startsWith('@')) {
-                    customTemplate.handleEvent(key, value as any);
+                    customTemplate.handleEvent(key.slice(1), value as any);
                 }
 
             });

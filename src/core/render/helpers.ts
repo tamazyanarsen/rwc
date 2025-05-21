@@ -91,7 +91,8 @@ export const append = <B extends BaseTemplate<any>>(element: HTMLElement, self: 
             wrapper.style.display = 'contents';
             effect(() => {
                 clearElement(wrapper);
-                wrapper.appendChild(new Text(valueToString(child())));
+                appendItems(wrapper, valueToString(child()))
+                // wrapper.appendChild(new Text(valueToString(child())));
             });
             element.appendChild(wrapper);
         }

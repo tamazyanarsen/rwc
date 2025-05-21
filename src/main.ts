@@ -4,6 +4,21 @@ import './style.css';
 
 export * from './core';
 
+const TestComponent = createComponent({
+  selector: 'my-component2',
+  props: {
+    testProp: signal(12)
+  },
+  events: {
+    testEvent: newEventEmitter<number>()
+  }
+}, (props, events) => {
+  setTimeout(() => {
+    events.testEvent(12)
+  }, 1000);
+  return div('my-component2:', () => props.testProp().toString())
+});
+
 createComponent({
   selector: 'my-component',
   props: {
@@ -23,7 +38,12 @@ createComponent({
   return div(
     cls`flex ${() => props.name()}`, 'props: ', props.name, () => props.name() + 1,
     when(true, div('true-content')),
-    when(test, div('true-content'), div('false-content'))
+    when(test, TestComponent({
+      '.testProp': 11,
+      '@testEvent': (self, e) => {
+        console.log('testEvent', self, e)
+      }
+    }, div('test-div')), div('false-content'))
   )
 })
 
