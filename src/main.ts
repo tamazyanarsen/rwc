@@ -1,4 +1,4 @@
-import { cls, createComponent, div, newEventEmitter, signal } from './core';
+import { cls, computed, createComponent, div, newEventEmitter, signal } from './core';
 import { when } from './core/render';
 import './style.css';
 
@@ -42,6 +42,7 @@ createComponent({
       '.testProp': 11,
       '@testEvent': (self, e) => {
         console.log('testEvent', self, e)
+        computed(() => props.name() + 1)
       }
     }, div('test-div')), div('false-content'))
   )

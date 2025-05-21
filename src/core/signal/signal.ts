@@ -34,7 +34,7 @@ export const effect = (fn: () => void) => {
     effectStack.pop()
 }
 
-export const computed = <T>(fn: () => T) => {
+export const computed = <T>(fn: () => T): Signal<T> => {
     const result = signal(fn())
     effect(() => result.set(fn()))
     return result
