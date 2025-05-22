@@ -13,7 +13,8 @@ export function createComponent<
 >(config: {
     selector: string,
     props?: Props,
-    events?: Events
+    events?: Events,
+    css?: string
 }, render: (props: Props, events: Events) => SomeTemplate) {
     class CustomElement extends BaseComponent {
         static selector = config.selector;
@@ -24,6 +25,9 @@ export function createComponent<
         constructor() {
             super();
             this.shadow = this.attachShadow({ mode: 'closed' });
+            const css = new CSSStyleSheet();
+            css.replaceSync(config.css || '');
+            this.shadow.adoptedStyleSheets = [css];
         }
 
         props = Object.fromEntries(Object.entries(config.props || {}).map(([key, value]) => [key, signal(value())])) as Props;
